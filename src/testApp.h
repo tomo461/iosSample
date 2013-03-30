@@ -13,6 +13,7 @@
 
 // macro for simulator
 #if 1
+#define IPHONE_SIM
 #define ofVideoGrabber      ofImage
 #define initGrabber(x, y)   loadImage("image/rola.jpg")
 #define isFrameNew          isAllocated
@@ -39,6 +40,9 @@ public:
     void gotFocus();
     void gotMemoryWarning();
     void deviceOrientationChanged(int newOrientation);
+    
+    ofMesh getMouthMeshFromFaceTracker(const ofxFaceTracker *faceTrackerPtr);
+    ofIndexType convertVertexIndexForMouthMesh(ofIndexType faceTrackerVertexIndex);
 	
 	ofVideoGrabber cam;
 	ofxFaceTracker camTracker;
