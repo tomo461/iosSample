@@ -7,11 +7,12 @@ void testApp::setup()
     /* settings for iOs */
 	//ofxAccelerometer.setup();    // initialize the accelerometer
 	//iPhoneSetOrientation(OFXIPHONE_ORIENTATION_LANDSCAPE_RIGHT);  // If you want a landscape oreintation
+
     
 	ofSetVerticalSync(true);
     ofEnableAlphaBlending();
 	ofSetDrawBitmapMode(OF_BITMAPMODE_MODEL_BILLBOARD);
-	
+
     
     // camera initialization
     camID    = 0;
@@ -19,6 +20,7 @@ void testApp::setup()
     cam.initGrabber(ofGetWidth(), ofGetHeight());
     wipeFlag = false;
     
+
 	
     // setting of faceTracker for camera
 	camTracker.setup();
@@ -27,7 +29,7 @@ void testApp::setup()
     srcImage.loadImage(DEFAULT_IMAGE_PATH);
     srcImage.setImageType(OF_IMAGE_COLOR_ALPHA);
     srcImage.resize(ofGetWidth(), ofGetHeight());
-    ofSetWindowShape(srcImage.width, srcImage.height);
+
     
     // setting of faceTracker for source image
     imgTracker.setup();
@@ -70,6 +72,7 @@ void testApp::update()
         
         changeSrcImageTracker();
     }
+
     
     if(camTracker.getFound()){
         // initialize vertex vectors and eye openness
@@ -143,7 +146,7 @@ void testApp::draw()
     srcImage.unbind();
     ofPopMatrix();
     glDisable(GL_DEPTH_TEST);
-    
+
     if(wipeFlag)
         cam.draw(ofGetWidth()*3/4, 0, ofGetWidth()/4, ofGetHeight()/4);
     

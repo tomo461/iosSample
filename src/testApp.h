@@ -48,7 +48,7 @@ public:
     void changeSrcImageTracker();
 	
     ofVideoGrabber  cam;
-    int                  camID; //0:back, 1:front
+    int              camID; //0:back, 1:front
 	ofxFaceTrackerThreaded  camTracker;
     ofxFaceTracker  imgTracker;
     ofImage         srcImage;
