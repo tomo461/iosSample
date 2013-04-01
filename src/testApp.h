@@ -10,7 +10,7 @@
 #include "ofxFaceTrackerThreaded.h"
 
 #define EYE_OPENNESS_OFFSET 0.4
-#define DEFAULT_IMAGE_PATH  "image/jobs.png"
+#define DEFAULT_IMAGE_PATH  "image/yuki.jpg"
 
 // macro for simulator
 #if 0
@@ -65,6 +65,8 @@ public:
     ofxiPhoneImagePicker imgPicker;
     
     bool            wipeFlag;
+    
+    ofImage         pictureLibraryIcon, showCameraImageIcon, cameraSwitchIcon;
 };
 
 
