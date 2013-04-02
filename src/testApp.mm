@@ -11,6 +11,7 @@ void testApp::setup()
 	ofSetVerticalSync(true);
     ofEnableAlphaBlending();
 	ofSetDrawBitmapMode(OF_BITMAPMODE_MODEL_BILLBOARD);
+    ofBackground(0, 0, 0);
 
     // camera initialization
 #ifndef IPHONE_SIM
@@ -26,8 +27,9 @@ void testApp::setup()
     // load source image
     srcImage.loadImage(DEFAULT_IMAGE_PATH);
     srcImage.setImageType(OF_IMAGE_COLOR_ALPHA);
-    srcImage.resize(ofGetWidth(), ofGetHeight());
 
+    float resizeRate = max(srcImage.width / (float) ofGetWidth(), srcImage.height / (float)ofGetHeight());
+    srcImage.resize(srcImage.width / resizeRate, srcImage.height / resizeRate);
     
     // setting of faceTracker for source image
     imgTracker.setup();
@@ -37,6 +39,7 @@ void testApp::setup()
     position    = imgTracker.getPosition();
     scale       = imgTracker.getScale();
     orientation = imgTracker.getOrientation();
+    
     
     // get face mesh from source image
     imgMesh = imgTracker.getImageMesh();
@@ -51,6 +54,11 @@ void testApp::setup()
     mouthMesh = getMouthMeshFromFaceTracker(&imgTracker);
     
     camObjPoints.clear();
+    
+    // load icon image;
+    cameraSwitchIcon.loadImage("image/icon00.png");
+    pictureLibraryIcon.loadImage("image/icon01.png");
+    showCameraImageIcon.loadImage("image/icon02.png");
 }
 
 //--------------------------------------------------------------
@@ -116,14 +124,24 @@ void testApp::update()
         }
     } else {
         camObjPoints.clear();
+        for(int i=0;i<imgMesh.getNumVertices();i++){
+            imgMesh.setVertex(i, imgTracker.getObjectPoint(i));
+        }
     }
 }
 
 //--------------------------------------------------------------
 void testApp::draw()
 {
-    // draw source image
-    srcImage.draw(0, 0, srcImage.width, srcImage.height);
+    if(imgTracker.getFound()){
+        // draw source image
+        //srcImage.draw(ofGetWidth()/2 - srcImage.width/2, ofGetHeight()/2 - srcImage.height/2, srcImage.width, srcImage.height);
+    
+        srcImage.draw((ofGetWidth()/2 - srcImage.width/2), (ofGetHeight()/2 - srcImage.height/2));
+    }
+    else{
+        ofDrawBitmapString("image face not found", 10, ofGetHeight()/2);
+    }
     
     // draw frame rate
 	ofSetColor(255);
@@ -132,10 +150,11 @@ void testApp::draw()
     // disable display 3D pharse
     ofSetupScreenOrtho(ofGetWindowWidth(), ofGetWindowHeight(), OF_ORIENTATION_DEFAULT, true, -1000,1000);
     
+    
     // draw mesh
     glEnable(GL_DEPTH_TEST);
     ofPushMatrix();
-    ofTranslate(position.x, position.y);
+    ofTranslate((ofGetWidth()/2 - srcImage.width/2) + position.x, (ofGetHeight()/2 - srcImage.height/2) + position.y);
     ofScale(scale, scale, scale);
     ofRotateX(orientation.x * 45.0f);
     ofRotateY(orientation.y * 45.0f);
