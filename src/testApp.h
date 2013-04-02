@@ -13,7 +13,7 @@
 #define DEFAULT_IMAGE_PATH  "image/jobs.png"
 
 // macro for simulator
-#if 0
+#if 1
 #define IPHONE_SIM
 #define ofVideoGrabber      ofImage
 #define initGrabber(x, y)   loadImage("image/rola.jpg")

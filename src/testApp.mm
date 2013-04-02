@@ -7,20 +7,18 @@ void testApp::setup()
     /* settings for iOs */
 	//ofxAccelerometer.setup();    // initialize the accelerometer
 	//iPhoneSetOrientation(OFXIPHONE_ORIENTATION_LANDSCAPE_RIGHT);  // If you want a landscape oreintation
-
     
 	ofSetVerticalSync(true);
     ofEnableAlphaBlending();
 	ofSetDrawBitmapMode(OF_BITMAPMODE_MODEL_BILLBOARD);
 
-    
     // camera initialization
+#ifndef IPHONE_SIM
     camID    = 0;
     cam.setDeviceID(camID);
+#endif
     cam.initGrabber(ofGetWidth(), ofGetHeight());
     wipeFlag = false;
-    
-
 	
     // setting of faceTracker for camera
 	camTracker.setup();
@@ -44,7 +42,7 @@ void testApp::setup()
     imgMesh = imgTracker.getImageMesh();
     imgMesh.clearTexCoords();
     ofVec2f normalizeFact = ofVec2f(ofNextPow2(srcImage.getWidth()), ofNextPow2(srcImage.getHeight()));
-    for(int i = 0; i < imgMesh.getNumVertices(); i++) {
+    for (int i = 0; i < imgMesh.getNumVertices(); i++) {
         imgMesh.addTexCoord(imgTracker.getImagePoint(i) / normalizeFact);   // should be implemented by overriding getMesh()?
     }
     
@@ -60,21 +58,23 @@ void testApp::update()
 {
     cam.update();
     
-    if(cam.isFrameNew()) {
+    if (cam.isFrameNew()) {
         camTracker.update(toCv(cam));
     }
     
-    if(imgPicker.imageUpdated){
+#ifndef IPHONE_SIM
+    if (imgPicker.imageUpdated) {
         imgPicker.imageUpdated = false;
         srcImage.setFromPixels(imgPicker.pixels, imgPicker.width, imgPicker.height, OF_IMAGE_COLOR_ALPHA);
+        srcImage.update();
         srcImage.resize(ofGetWidth(), ofGetHeight());
         imgPicker.close();
         
         changeSrcImageTracker();
     }
+#endif
 
-    
-    if(camTracker.getFound()){
+    if (camTracker.getFound()){
         // initialize vertex vectors and eye openness
         if (camObjPoints.empty()) {
             camObjPoints = camTracker.getObjectPoints();
@@ -147,9 +147,9 @@ void testApp::draw()
     ofPopMatrix();
     glDisable(GL_DEPTH_TEST);
 
-    if(wipeFlag)
+    if (wipeFlag) {
         cam.draw(ofGetWidth()*3/4, 0, ofGetWidth()/4, ofGetHeight()/4);
-    
+    }
 }
 
 /**
@@ -221,11 +221,12 @@ ofIndexType testApp::convertVertexIndexForMouthMesh(ofIndexType faceTrackerVerte
  * @return      none
  */
 
-void testApp::changeSrcImageTracker(){
-
+void testApp::changeSrcImageTracker()
+{
+    imgTracker.reset();
     imgTracker.update(toCv(srcImage));
     
-    if(!imgTracker.getFound()){
+    if (!imgTracker.getFound()) {
         cout<<"didn't find face"<<endl;
     }
     
@@ -240,7 +241,7 @@ void testApp::changeSrcImageTracker(){
     imgMesh = imgTracker.getImageMesh();
     imgMesh.clearTexCoords();
     ofVec2f normalizeFact = ofVec2f(ofNextPow2(srcImage.getWidth()), ofNextPow2(srcImage.getHeight()));
-    for(int i = 0; i < imgMesh.getNumVertices(); i++) {
+    for (int i = 0; i < imgMesh.getNumVertices(); i++) {
         imgMesh.addTexCoord(imgTracker.getImagePoint(i) / normalizeFact);   // should be implemented by overriding getMesh()?
     }
     
@@ -263,32 +264,31 @@ void testApp::exit()
 //--------------------------------------------------------------
 void testApp::touchDown(ofTouchEventArgs & touch)
 {
-    
     //switch camera
-    if(touch.x < ofGetWidth()/3){
+    if (touch.x < ofGetWidth()/3) {
+#ifndef IPHONE_SIM
         cam.close();
-        if(camID == 0){
+        if (camID == 0) {
             camID = 1;
         }
-        else{
+        else {
             camID = 0;
         }
         cam.setDeviceID(camID);
         cam.initGrabber(ofGetWidth(), ofGetHeight());
+#endif
     }
     
     //open photo library
-    else if(touch.x > ofGetWidth()/3 && touch.x < ofGetWidth()/3 *2){
+    else if (touch.x > ofGetWidth()/3 && touch.x < ofGetWidth()/3 *2) {
         imgPicker.openLibrary();
         
     }
     
     //display camera image
-    else if(touch.x > ofGetWidth()/3*2 && touch.x < ofGetWidth()){
+    else if (touch.x > ofGetWidth()/3*2 && touch.x < ofGetWidth()) {
         wipeFlag = (wipeFlag)? false: true;
     }
-        
-
 }
 
 //--------------------------------------------------------------

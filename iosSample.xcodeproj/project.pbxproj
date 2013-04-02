@@ -1047,7 +1047,7 @@
 					"../../../addons/ofxOpenCv/libs/**",
 					"../../../addons/ofxOpenCv/src/**",
 				);
-				INFOPLIST_FILE = "$(SRCROOT)/ofxiphone-Info.plist";
+				INFOPLIST_FILE = "ofxiphone-Info.plist";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../../addons/ofxOpenCv/libs/opencv/lib/ios\"",
@@ -1071,7 +1071,7 @@
 					"../../../addons/ofxOpenCv/libs/**",
 					"../../../addons/ofxOpenCv/src/**",
 				);
-				INFOPLIST_FILE = "$(SRCROOT)/ofxiphone-Info.plist";
+				INFOPLIST_FILE = "ofxiphone-Info.plist";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../../addons/ofxOpenCv/libs/opencv/lib/ios\"",
