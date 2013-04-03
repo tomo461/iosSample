@@ -27,6 +27,7 @@ void testApp::setup()
 	camTracker.setup();
     
     // load source image
+    numImage = 1;
     srcImage.loadImage(DEFAULT_IMAGE_PATH);
     srcImage.setImageType(OF_IMAGE_COLOR_ALPHA);
 
@@ -181,6 +182,11 @@ void testApp::draw()
     cameraSwitchIcon.draw(ofGetWidth()/5 - pictureLibraryIcon.width/2, ofGetHeight()/5*4);
     pictureLibraryIcon.draw(ofGetWidth()/2 - pictureLibraryIcon.width/2, ofGetHeight()/5*4);
     showCameraImageIcon.draw(ofGetWidth()/5*4 - showCameraImageIcon.width/2, ofGetHeight()/5*4);
+    
+    // draw triangles
+    ofSetColor(255, 255, 255);
+    ofTriangle(5, ofGetHeight()/2, 20, ofGetHeight()/2 - 20, 20, ofGetHeight()/2 + 20);
+    ofTriangle(ofGetWidth()-5, ofGetHeight()/2, ofGetWidth()-20, ofGetHeight()/2 - 20, ofGetWidth() - 20, ofGetHeight()/2 + 20);
 }
 
 /**
@@ -295,32 +301,65 @@ void testApp::touchDown(ofTouchEventArgs & touch)
 {
     if(touch.y > ofGetHeight()/5 *4){
     
-    //switch camera
-    if(touch.x < ofGetWidth()/3){
-        cam.close();
-        if(camID == 0){
-            camID = 1;
+        //switch camera
+        if(touch.x < ofGetWidth()/3){
+            cam.close();
+            if(camID == 0){
+                camID = 1;
+            }
+            else{
+                camID = 0;
+            }
+            cam.setDeviceID(camID);
+            cam.initGrabber(ofGetWidth(), ofGetHeight());
         }
+    
+        //open photo library
+        else if(touch.x > ofGetWidth()/3 && touch.x < ofGetWidth()/3 *2){
+            imgPicker.openLibrary();
+        
+        }
+    
+        //display camera image
+        else if(touch.x > ofGetWidth()/3*2 && touch.x < ofGetWidth()){
+            wipeFlag = (wipeFlag)? false: true;
+        }
+        
+        return;
+    } //if(touch.y > ofGetHeight()/5 *4)
+    
+    
+    if(touch.y > ofGetHeight()/2 - 20 && touch.y < ofGetHeight()/2 + 20){
+        if(touch.x < 30){
+            numImage --;
+            if(numImage <= 0)
+                numImage = NUM_IMAGE;
+        }
+        
+        else if(touch.x > ofGetWidth() - 30){
+            numImage ++;
+            if(numImage > NUM_IMAGE)
+                numImage = 1;
+        }
+        
         else{
-            camID = 0;
+            return;
         }
-        cam.setDeviceID(camID);
-        cam.initGrabber(ofGetWidth(), ofGetHeight());
-    }
-    
-    //open photo library
-    else if(touch.x > ofGetWidth()/3 && touch.x < ofGetWidth()/3 *2){
-        imgPicker.openLibrary();
+        
+        srcImage.clear();
+        
+        char imagePath[256];
+        sprintf(imagePath, "image/%d.jpg",numImage);
+        cout<<imagePath<<endl;
+        srcImage.loadImage(imagePath);
+        
+        srcImage.setImageType(OF_IMAGE_COLOR_ALPHA);
+        
+        float resizeRate = max(srcImage.width / (float) ofGetWidth(), srcImage.height / (float)ofGetHeight());
+        srcImage.resize(srcImage.width / resizeRate, srcImage.height / resizeRate);
+        changeSrcImageTracker();
         
     }
-    
-    //display camera image
-    else if(touch.x > ofGetWidth()/3*2 && touch.x < ofGetWidth()){
-        wipeFlag = (wipeFlag)? false: true;
-    }
-        
-    }
-    
 
 }
 

@@ -10,7 +10,8 @@
 #include "ofxFaceTrackerThreaded.h"
 
 #define EYE_OPENNESS_OFFSET 0.4
-#define DEFAULT_IMAGE_PATH  "image/yuki.jpg"
+#define DEFAULT_IMAGE_PATH  "image/1.jpg"
+#define NUM_IMAGE           2
 
 // macro for simulator
 #if 0
@@ -67,6 +68,8 @@ public:
     bool            wipeFlag;
     
     ofImage         pictureLibraryIcon, showCameraImageIcon, cameraSwitchIcon;
+    
+    int             numImage;
 };
 
 
