@@ -6,6 +6,11 @@
 # Build dir
 build/
 
+# bin/data/image dir
+#bin/data/image/*
+#!bin/data/image/icon*
+#!bin/data/image/default*
+
 # Xcode project files except for the project file
 *.xcodeproj/*
 !*.xcodeproj/project.pbxproj

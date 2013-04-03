@@ -4,24 +4,22 @@
 //--------------------------------------------------------------
 void testApp::setup()
 {
-    /* settings for iOs */
-	//ofxAccelerometer.setup();    // initialize the accelerometer
-	//iPhoneSetOrientation(OFXIPHONE_ORIENTATION_LANDSCAPE_RIGHT);  // If you want a landscape oreintation
-
+    /*** settings for iOS ***/
+//	ofxAccelerometer.setup();    // initialize the accelerometer
+//	iPhoneSetOrientation(OFXIPHONE_ORIENTATION_LANDSCAPE_RIGHT);  // If you want a landscape oreintation
     
 	ofSetVerticalSync(true);
     ofEnableAlphaBlending();
 	ofSetDrawBitmapMode(OF_BITMAPMODE_MODEL_BILLBOARD);
     ofBackground(0, 0, 0);
 
-    
     // camera initialization
-    camID    = 0;
+#ifndef DEBUG_IPHONE_SIMULATOR
+    camID    = CAMERA_BACK;
     cam.setDeviceID(camID);
+#endif
     cam.initGrabber(ofGetWidth(), ofGetHeight());
     wipeFlag = false;
-    
-
 	
     // setting of faceTracker for camera
 	camTracker.setup();
@@ -43,18 +41,16 @@ void testApp::setup()
     scale       = imgTracker.getScale();
     orientation = imgTracker.getOrientation();
     
-    
     // get face mesh from source image
     imgMesh = imgTracker.getImageMesh();
     imgMesh.clearTexCoords();
     ofVec2f normalizeFact = ofVec2f(ofNextPow2(srcImage.getWidth()), ofNextPow2(srcImage.getHeight()));
-    for(int i = 0; i < imgMesh.getNumVertices(); i++) {
+    for (int i = 0; i < imgMesh.getNumVertices(); i++) {
         imgMesh.addTexCoord(imgTracker.getImagePoint(i) / normalizeFact);   // should be implemented by overriding getMesh()?
     }
     
     // get mouth mesh from source image
-    mouthMesh.setMode(OF_PRIMITIVE_TRIANGLE_STRIP);
-    mouthMesh = getMouthMeshFromFaceTracker(&imgTracker);
+    getMouthMeshFromSrcImageTracker();
     
     camObjPoints.clear();
     
@@ -69,14 +65,15 @@ void testApp::update()
 {
     cam.update();
     
-    if(cam.isFrameNew()) {
+    if (cam.isFrameNew()) {
         camTracker.update(toCv(cam));
     }
     
-    if(imgPicker.imageUpdated){
+#ifndef DEBUG_IPHONE_SIMULATOR
+    if (imgPicker.imageUpdated) {
         imgPicker.imageUpdated = false;
         srcImage.setFromPixels(imgPicker.pixels, imgPicker.width, imgPicker.height, OF_IMAGE_COLOR_ALPHA);
-        //srcImage.resize(ofGetWidth(), ofGetHeight());
+//        srcImage.resize(ofGetWidth(), ofGetHeight());
         float resizeRate = max(srcImage.width / (float) ofGetWidth(), srcImage.height / (float)ofGetHeight());
         srcImage.resize(srcImage.width / resizeRate, srcImage.height / resizeRate);
 
@@ -84,9 +81,9 @@ void testApp::update()
         
         changeSrcImageTracker();
     }
+#endif
 
-    
-    if(camTracker.getFound()){
+    if (camTracker.getFound()) {
         // initialize vertex vectors and eye openness
         if (camObjPoints.empty()) {
             camObjPoints = camTracker.getObjectPoints();
@@ -100,7 +97,7 @@ void testApp::update()
             if (i < 18) {
                 imgMesh.setVertex(i, imgTracker.getObjectPoint(i));
             } else {
-#ifdef IPHONE_SIM
+#ifdef DEBUG_IPHONE_SIMULATOR
                 if (i >= 63 && i <= 65) {
                     camObjPointsDiff[i] = (camTracker.getObjectPoint(i) + ofVec3f(0, 1.1) * ofGetElapsedTimef()/2 - camObjPoints[i]);
                 } else {
@@ -115,8 +112,6 @@ void testApp::update()
                 mouthMesh.setVertex(convertVertexIndexForMouthMesh(i), camObjPointsDiff[i]);
             }
         }
-        // add color to mouth mesh
-        mouthMesh.addColor(ofFloatColor(0.2, 0, 0));
         // check eye openness
         if (camTracker.getGesture(ofxFaceTracker::LEFT_EYE_OPENNESS) < leftEyeOpennessTh) {
             imgMesh.setVertex(37, camObjPoints[41]);
@@ -128,7 +123,7 @@ void testApp::update()
         }
     } else {
         camObjPoints.clear();
-        for(int i=0;i<imgMesh.getNumVertices();i++){
+        for (int i = 0; i < imgMesh.getNumVertices(); i++) {
             imgMesh.setVertex(i, imgTracker.getObjectPoint(i));
         }
     }
@@ -137,13 +132,11 @@ void testApp::update()
 //--------------------------------------------------------------
 void testApp::draw()
 {
-    if(imgTracker.getFound()){
+    if (imgTracker.getFound()) {
         // draw source image
-        //srcImage.draw(ofGetWidth()/2 - srcImage.width/2, ofGetHeight()/2 - srcImage.height/2, srcImage.width, srcImage.height);
-    
+//        srcImage.draw(ofGetWidth()/2 - srcImage.width/2, ofGetHeight()/2 - srcImage.height/2, srcImage.width, srcImage.height);
         srcImage.draw((ofGetWidth()/2 - srcImage.width/2), (ofGetHeight()/2 - srcImage.height/2));
-    }
-    else{
+    } else {
         ofDrawBitmapString("image face not found", 10, ofGetHeight()/2);
     }
     
@@ -154,7 +147,6 @@ void testApp::draw()
     // disable display 3D pharse
     ofSetupScreenOrtho(ofGetWindowWidth(), ofGetWindowHeight(), OF_ORIENTATION_DEFAULT, true, -1000,1000);
     
-    
     // draw mesh
     glEnable(GL_DEPTH_TEST);
     ofPushMatrix();
@@ -163,6 +155,7 @@ void testApp::draw()
     ofRotateX(orientation.x * 45.0f);
     ofRotateY(orientation.y * 45.0f);
     ofRotateZ(orientation.z * 45.0f);
+    mouthMesh.addColor(ofFloatColor(0.2, 0, 0));
     mouthMesh.drawFaces();
     srcImage.bind();
     imgMesh.draw();
@@ -170,13 +163,13 @@ void testApp::draw()
     ofPopMatrix();
     glDisable(GL_DEPTH_TEST);
 
-    if(wipeFlag)
+    if (wipeFlag) {
         cam.draw(ofGetWidth()*3/4, 0, ofGetWidth()/4, ofGetHeight()/4);
-    
-    if(!imgTracker.getFound()){
-        drawHighlightString("image face not fount", 10, ofGetHeight()/2);
     }
     
+    if (!imgTracker.getFound()) {
+        drawHighlightString("image face not fount", 10, ofGetHeight()/2);
+    }
     
     // draw icon image
     cameraSwitchIcon.draw(ofGetWidth()/5 - pictureLibraryIcon.width/2, ofGetHeight()/5*4);
@@ -190,23 +183,51 @@ void testApp::draw()
 }
 
 /**
- * @function    getMouthMeshFromFaceTracker
- * @abstract    gets a mouth mesh from ofxFaceTracker.
- * @param       FaceTracker pointer
- * @return      extracted mouth mesh
+ * @function    getMouthMeshFromSrcImageTracker
+ * @abstract    gets a mouth mesh from the source image.
+ * @param       none
+ * @return      none
  */
-ofMesh testApp::getMouthMeshFromFaceTracker(const ofxFaceTracker *faceTrackerPtr)
+void testApp::getMouthMeshFromSrcImageTracker()
 {
     ofPolyline mouthLine;
     ofTessellator tessellator;
-    ofMesh mouthMesh;
     
-    mouthLine = faceTrackerPtr->getObjectFeature(ofxFaceTracker::INNER_MOUTH);
+    mouthLine = imgTracker.getObjectFeature(ofxFaceTracker::INNER_MOUTH);
     mouthMesh.setMode(OF_PRIMITIVE_TRIANGLE_STRIP);
     tessellator.tessellateToMesh(mouthLine, OF_POLY_WINDING_ODD, mouthMesh);
     mouthMesh.addColor(ofFloatColor(0.2, 0, 0));
+}
+
+/**
+ * @function    changeSrcImageTracker
+ * @abstract    change sourch image.
+ * @param       none
+ * @return      none
+ */
+void testApp::changeSrcImageTracker()
+{
+    imgTracker.reset();
+    imgTracker.setup();
+    imgTracker.update(toCv(srcImage));
     
-    return mouthMesh;
+    // get face position of source image
+    position    = imgTracker.getPosition();
+    scale       = imgTracker.getScale();
+    orientation = imgTracker.getOrientation();
+    
+    // get face mesh from source image
+    imgMesh.clear();
+    imgMesh = imgTracker.getImageMesh();
+    imgMesh.clearTexCoords();
+    ofVec2f normalizeFact = ofVec2f(ofNextPow2(srcImage.getWidth()), ofNextPow2(srcImage.getHeight()));
+    for (int i = 0; i < imgMesh.getNumVertices(); i++) {
+        imgMesh.addTexCoord(imgTracker.getImagePoint(i) / normalizeFact);   // should be implemented by overriding getMesh()?
+    }
+    
+    // get mouth mesh from source image
+    getMouthMeshFromSrcImageTracker();
+    camObjPoints.clear();
 }
 
 /**
@@ -251,45 +272,6 @@ ofIndexType testApp::convertVertexIndexForMouthMesh(ofIndexType faceTrackerVerte
     return index;
 }
 
-/**
- * @function    changeSrcImageTracker
- * @abstract    change sourch image.
- * @param       none
- * @return      none
- */
-
-void testApp::changeSrcImageTracker(){
-
-    imgTracker.reset();
-    imgTracker.setup();
-    
-    imgTracker.update(toCv(srcImage));
-    
-    // get face position of source image
-    position    = imgTracker.getPosition();
-    scale       = imgTracker.getScale();
-    orientation = imgTracker.getOrientation();
-    
-    // get face mesh from source image
-    imgMesh.clear();
-    
-    imgMesh = imgTracker.getImageMesh();
-    imgMesh.clearTexCoords();
-    ofVec2f normalizeFact = ofVec2f(ofNextPow2(srcImage.getWidth()), ofNextPow2(srcImage.getHeight()));
-    for(int i = 0; i < imgMesh.getNumVertices(); i++) {
-        imgMesh.addTexCoord(imgTracker.getImagePoint(i) / normalizeFact);   // should be implemented by overriding getMesh()?
-    }
-    
-    // get mouth mesh from source image
-    mouthMesh.clear();
-    
-    mouthMesh.setMode(OF_PRIMITIVE_TRIANGLE_STRIP);
-    mouthMesh = getMouthMeshFromFaceTracker(&imgTracker);
-    
-    camObjPoints.clear();
-}
-
-
 //--------------------------------------------------------------
 void testApp::exit()
 {
@@ -300,65 +282,63 @@ void testApp::exit()
 void testApp::touchDown(ofTouchEventArgs & touch)
 {
     if(touch.y > ofGetHeight()/5 *4){
-    
         //switch camera
-        if(touch.x < ofGetWidth()/3){
+        if (touch.x < ofGetWidth()/3) {
+#ifndef DEBUG_IPHONE_SIMULATOR
             cam.close();
-            if(camID == 0){
-                camID = 1;
+            if (camID == CAMERA_BACK) {
+                camID = CAMERA_FRONT;
             }
-            else{
-                camID = 0;
+            else {
+                camID = CAMERA_BACK;
             }
             cam.setDeviceID(camID);
             cam.initGrabber(ofGetWidth(), ofGetHeight());
+#endif
         }
-    
+#ifdef TARGET_OF_IPHONE
         //open photo library
-        else if(touch.x > ofGetWidth()/3 && touch.x < ofGetWidth()/3 *2){
+        else if (touch.x > ofGetWidth()/3 && touch.x < ofGetWidth()/3 *2) {
             imgPicker.openLibrary();
-        
+            
         }
-    
+#endif
         //display camera image
-        else if(touch.x > ofGetWidth()/3*2 && touch.x < ofGetWidth()){
-            wipeFlag = (wipeFlag)? false: true;
+        else if (touch.x > ofGetWidth()/3*2 && touch.x < ofGetWidth()) {
+            wipeFlag = (wipeFlag) ? false: true;
         }
-        
-        return;
     } //if(touch.y > ofGetHeight()/5 *4)
-    
-    
+
+
     if(touch.y > ofGetHeight()/2 - 20 && touch.y < ofGetHeight()/2 + 20){
         if(touch.x < 30){
             numImage --;
             if(numImage <= 0)
                 numImage = NUM_IMAGE;
-        }
-        
+            }
+    
         else if(touch.x > ofGetWidth() - 30){
             numImage ++;
             if(numImage > NUM_IMAGE)
                 numImage = 1;
         }
-        
+    
         else{
             return;
         }
-        
+    
         srcImage.clear();
-        
+    
         char imagePath[256];
         sprintf(imagePath, "image/%d.jpg",numImage);
-        cout<<imagePath<<endl;
         srcImage.loadImage(imagePath);
-        
+    
         srcImage.setImageType(OF_IMAGE_COLOR_ALPHA);
-        
+    
         float resizeRate = max(srcImage.width / (float) ofGetWidth(), srcImage.height / (float)ofGetHeight());
         srcImage.resize(srcImage.width / resizeRate, srcImage.height / resizeRate);
         changeSrcImageTracker();
-        
+    
     }
 
 }

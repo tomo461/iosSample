@@ -1,30 +1,33 @@
 #pragma once
 
 #include "ofMain.h"
-#include "ofxiPhone.h"
-#include "ofxiPhoneExtras.h"
+#include "common.h"
 
+//--- addons -----------------------------------------------------------
 #include "ofxOpenCv.h"
 #include "ofxCv.h"
 #include "ofxFaceTracker.h"
 #include "ofxFaceTrackerThreaded.h"
 
-#define EYE_OPENNESS_OFFSET 0.4
-#define DEFAULT_IMAGE_PATH  "image/1.jpg"
-#define NUM_IMAGE           2
-
-// macro for simulator
-#if 0
-#define IPHONE_SIM
+//--- compile option for iPhone simulator ------------------------------
+#ifdef TARGET_IPHONE_SIMULATOR
+#define DEBUG_IPHONE_SIMULATOR
 #define ofVideoGrabber      ofImage
-#define initGrabber(x, y)   loadImage("image/rola.jpg")
+#define initGrabber(x, y)   loadImage("image/1.jpg")
 #define isFrameNew          isAllocated
 #endif
 
+//--- macro definitions ------------------------------------------------
+#define EYE_OPENNESS_OFFSET 0.3
+#define DEFAULT_IMAGE_PATH  "image/1.jpg"
+#define NUM_IMAGE           5
+
+//--- namespace --------------------------------------------------------
 using namespace ofxCv;
 using namespace cv;
 
-class testApp : public ofxiPhoneApp
+//--- class ------------------------------------------------------------
+class testApp : public OF_APP_TYPE
 {	
 public:
     void setup();
@@ -32,27 +35,49 @@ public:
     void draw();
     void exit();
 	
+    /*** callbacks ***/
+#if defined(TARGET_OF_IPHONE) || defined(TARGET_ANDROID)
     void touchDown(ofTouchEventArgs & touch);
     void touchMoved(ofTouchEventArgs & touch);
     void touchUp(ofTouchEventArgs & touch);
     void touchDoubleTap(ofTouchEventArgs & touch);
     void touchCancelled(ofTouchEventArgs & touch);
-    
     void lostFocus();
     void gotFocus();
     void gotMemoryWarning();
     void deviceOrientationChanged(int newOrientation);
+#else
+    void keyPressed( int key );
+    void keyReleased( int key );
+    void mouseMoved( int x, int y );
+    void mouseDragged( int x, int y, int button );
+    void mousePressed( int x, int y, int button );
+    void mouseReleased();
+    void mouseReleased(int x, int y, int button );
+    void windowResized(int w, int h);
+    void dragEvent(ofDragInfo dragInfo);
+#endif
     
-    ofMesh getMouthMeshFromFaceTracker(const ofxFaceTracker *faceTrackerPtr);
+    /*** functions ***/
+    void getMouthMeshFromSrcImageTracker(void);
+    void changeSrcImageTracker(void);
     ofIndexType convertVertexIndexForMouthMesh(ofIndexType faceTrackerVertexIndex);
 
-    void changeSrcImageTracker();
+    /*** types ***/
+    enum CamID_t {
+        CAMERA_BACK,
+        CAMERA_FRONT,
+    };
 	
+    /*** variables ***/
     ofVideoGrabber  cam;
-    int              camID; //0:back, 1:front
+    CamID_t         camID;
+    bool            wipeFlag;
 	ofxFaceTrackerThreaded  camTracker;
     ofxFaceTracker  imgTracker;
     ofImage         srcImage;
+    ofImage         pictureLibraryIcon, showCameraImageIcon, cameraSwitchIcon;
+    int             numImage;
     ofMesh          imgMesh;
     ofMesh          mouthMesh;
     ofVec2f         position;
@@ -61,15 +86,11 @@ public:
     float           leftEyeOpennessTh;
     float           rightEyeOpennessTh;
     vector<ofVec3f> camObjPoints, camObjPointsDiff;
-    vector<ofVec2f> camImgPoints, camImgPointsDiff;
-    
+
+#ifdef TARGET_OF_IPHONE
     ofxiPhoneImagePicker imgPicker;
-    
-    bool            wipeFlag;
-    
-    ofImage         pictureLibraryIcon, showCameraImageIcon, cameraSwitchIcon;
-    
-    int             numImage;
+#endif
+
 };
 
 
