@@ -10,12 +10,12 @@
 #include "ofxFaceTrackerThreaded.h"
 
 //--- compile option for iPhone simulator ------------------------------
-#ifdef TARGET_IPHONE_SIMULATOR
-#define DEBUG_IPHONE_SIMULATOR
-#define ofVideoGrabber      ofImage
-#define initGrabber(x, y)   loadImage("image/1.jpg")
-#define isFrameNew          isAllocated
-#endif
+//#ifdef TARGET_IPHONE_SIMULATOR
+//#define DEBUG_IPHONE_SIMULATOR
+//#define ofVideoGrabber      ofImage
+//#define initGrabber(x, y)   loadImage("image/1.jpg")
+//#define isFrameNew          isAllocated
+//#endif
 
 //--- macro definitions ------------------------------------------------
 #define EYE_OPENNESS_OFFSET 0.3

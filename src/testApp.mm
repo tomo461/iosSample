@@ -11,7 +11,8 @@ void testApp::setup()
 	ofSetVerticalSync(true);
     ofEnableAlphaBlending();
 	ofSetDrawBitmapMode(OF_BITMAPMODE_MODEL_BILLBOARD);
-    ofBackground(73, 168, 188);
+    ofBackground(0, 0, 0);
+    //ofBackground(73, 168, 188);
 
     // camera initialization
 #ifndef DEBUG_IPHONE_SIMULATOR
