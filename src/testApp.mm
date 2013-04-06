@@ -11,7 +11,7 @@ void testApp::setup()
 	ofSetVerticalSync(true);
     ofEnableAlphaBlending();
 	ofSetDrawBitmapMode(OF_BITMAPMODE_MODEL_BILLBOARD);
-    ofBackground(0, 0, 0);
+    ofBackground(73, 168, 188);
 
     // camera initialization
 #ifndef DEBUG_IPHONE_SIMULATOR
@@ -55,7 +55,7 @@ void testApp::setup()
     camObjPoints.clear();
     
     // load icon image;
-    cameraSwitchIcon.loadImage("image/icon00.png");
+    cameraSwitchIcon.loadImage("image/icon03.png");
     pictureLibraryIcon.loadImage("image/icon01.png");
     showCameraImageIcon.loadImage("image/icon02.png");
 }
@@ -137,12 +137,13 @@ void testApp::draw()
 //        srcImage.draw(ofGetWidth()/2 - srcImage.width/2, ofGetHeight()/2 - srcImage.height/2, srcImage.width, srcImage.height);
         srcImage.draw((ofGetWidth()/2 - srcImage.width/2), (ofGetHeight()/2 - srcImage.height/2));
     } else {
-        ofDrawBitmapString("image face not found", 10, ofGetHeight()/2);
+        ofDrawBitmapString("face was not fouond.", 25, ofGetHeight()/2);
+        ofDrawBitmapString("Please change the photo.", 25, ofGetHeight()/2 + 10);
     }
     
     // draw frame rate
 	ofSetColor(255);
-	ofDrawBitmapString(ofToString((int) ofGetFrameRate()), 10, 20);
+//	ofDrawBitmapString(ofToString((int) ofGetFrameRate()), 10, 20);
     
     // disable display 3D pharse
     ofSetupScreenOrtho(ofGetWindowWidth(), ofGetWindowHeight(), OF_ORIENTATION_DEFAULT, true, -1000,1000);
@@ -172,9 +173,11 @@ void testApp::draw()
     }
     
     // draw icon image
-    cameraSwitchIcon.draw(ofGetWidth()/5 - pictureLibraryIcon.width/2, ofGetHeight()/5*4);
-    pictureLibraryIcon.draw(ofGetWidth()/2 - pictureLibraryIcon.width/2, ofGetHeight()/5*4);
-    showCameraImageIcon.draw(ofGetWidth()/5*4 - showCameraImageIcon.width/2, ofGetHeight()/5*4);
+    cameraSwitchIcon.draw(ofGetWidth()/5 - cameraSwitchIcon.width/2, ofGetHeight()/6*5 - cameraSwitchIcon.height/2);
+    pictureLibraryIcon.draw(ofGetWidth()/2 - pictureLibraryIcon.width/2, ofGetHeight()/6*5 - pictureLibraryIcon.height/2);
+    showCameraImageIcon.draw(ofGetWidth()/5*4 - showCameraImageIcon.width/2, ofGetHeight()/6*5 - showCameraImageIcon.height/2);
+    
+    
     
     // draw triangles
     ofSetColor(255, 255, 255);
@@ -281,7 +284,7 @@ void testApp::exit()
 //--------------------------------------------------------------
 void testApp::touchDown(ofTouchEventArgs & touch)
 {
-    if(touch.y > ofGetHeight()/5 *4){
+    if(touch.y > ofGetHeight()/6 *5){
         //switch camera
         if (touch.x < ofGetWidth()/3) {
 #ifndef DEBUG_IPHONE_SIMULATOR
@@ -307,7 +310,7 @@ void testApp::touchDown(ofTouchEventArgs & touch)
         else if (touch.x > ofGetWidth()/3*2 && touch.x < ofGetWidth()) {
             wipeFlag = (wipeFlag) ? false: true;
         }
-    } //if(touch.y > ofGetHeight()/5 *4)
+    } //if(touch.y > ofGetHeight()/6 *5)
 
 
     if(touch.y > ofGetHeight()/2 - 20 && touch.y < ofGetHeight()/2 + 20){
